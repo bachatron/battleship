@@ -20,31 +20,30 @@ class Ship {
 
 class Gameboard {
     constructor () {
-        this.board = {
+        this.board = Array.from({ length: 10 }, () => Array(10).fill(null));
+    }
+
+    convertCoordinate(coordinate) {
+        const letterToIndex = {
+            A: 0, B: 1, C: 2, D: 3, E: 4, 
+            F: 5, G: 6, H: 7, I: 8, J: 9
+        };        
+
+        const letter = coordinate[0].toUpperCase();
+        const number = parseInt(coordinate.slice(1)) - 1; 
     
-            A: [null, null, null, null, null, null, null, null, null, null],
-            B: [null, null, null, null, null, null, null, null, null, null],
-            C: [null, null, null, null, null, null, null, null, null, null],
-            D: [null, null, null, null, null, null, null, null, null, null],
-            E: [null, null, null, null, null, null, null, null, null, null],
-            F: [null, null, null, null, null, null, null, null, null, null],
-            G: [null, null, null, null, null, null, null, null, null, null],
-            H: [null, null, null, null, null, null, null, null, null, null],
-            I: [null, null, null, null, null, null, null, null, null, null],
-            J: [null, null, null, null, null, null, null, null, null, null],
-        
-        }
+        return [letterToIndex[letter], number];
     }
 
     receiveAttack (coordinate) {
-        const vCord = coordinate[0];
-        const hCord = parseInt(coordinate.slice(1)) - 1;
+        const [row, col] = this.convertCoordinate(coordinate)
 
-        if (this.board[vCord][hCord]) {
-            this.board[vCord][hCord].hit();
+        if (this.board[row][col]) {
+            this.board[row][col].hit();
+            this.board[row][col].isSunk();
         } else {
-            this.board[vCord][hCord] = 'x'
-        };
+            this.board[row][col] = 'x';
+        }
     }
 
 }
