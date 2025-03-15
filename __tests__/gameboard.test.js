@@ -1,5 +1,5 @@
-const Gameboard = require("./gameboard"); // Adjust path as needed
-const Ship = require("./ship"); // Assuming you have a Ship class
+const Gameboard = require("../gameboard");
+const Ship = require("../ship");
 
 describe("Gameboard.placeShip()", () => {
     let board;

@@ -18,11 +18,13 @@ class Gameboard {
     receiveAttack (coordinate) {
         const [row, col] = this.convertCoordinate(coordinate)
 
+        const miss = 'x';
+
         if (this.board[row][col]) {
             this.board[row][col].hit();
             this.board[row][col].isSunk();
         } else {
-            this.board[row][col] = 'x';
+            this.board[row][col] = miss;
         }
     }
 
