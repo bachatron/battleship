@@ -1,7 +1,8 @@
 import Gameboard from "./gameboard.js";
 import Ship from "./ship.js";
+import EventEmitter from "./eventEmitter.js";
 
-class Player {
+export class Player {
     constructor () {
         this.fleet = {
             carrier: new Ship(5),
@@ -11,6 +12,7 @@ class Player {
             patrol: new Ship(2),
         }
         this.board = new Gameboard()
+        this.attackedCoordinates = new Set();
     }
 
     allShipsSunk () {
@@ -23,97 +25,89 @@ class HumanPlayer extends Player {
         super();
     }
 
-    getInput (message) {
-        if (typeof this.testInput === "function") {
-            return this.testInput(message);
-        }
-        return prompt(message).toUpperCase();
-    }
-
-    getValidCoordinate(message) {
-        let coordinate;
-        while (true) {
-            coordinate = this.getInput(message);
-            if (/^[A-J](10|[1-9])$/.test(coordinate)) break;
-            alert("Invalid coordinate! Must be a letter (A-J) and a number (1-10). Try again.");
-        }
-        return coordinate;
-    }
-
-    placeShipOnBoard () {
-
-        for (const [key, value] of Object.entries(this.fleet)) {
-
-            let success = false
-
-            while (!success) {
-
-                let coordinate = this.getValidCoordinate(`Enter coordinate for the ${key} (e.g., "B4"):`);
-                let isVertical;
-
-                // Validate orientation input ("V" or "H")
-                while (true) {
-                    let input = this.getInput('Vertical (V) or Horizontal (H)?');
-                    if (input === "V" || input === "H") {
-                        isVertical = input === "V";
-                        break;
+    getInput(message) {
+        return new Promise((resolve) => {
+            const inputField = document.getElementById("coordinateInput");
+    
+            EventEmitter.emit('log', message);
+            inputField.focus();
+    
+            function handleInput(event) {
+                if (event.key === "Enter") {
+                    const value = inputField.value.trim().toUpperCase();
+                    //console.log("handleInput: " + value);
+                    if (value) {
+                        //console.log(`User input received: ${value}`); // Debugging log
+                        inputField.value = ""; // Clear input after submission
+                        inputField.removeEventListener("keydown", handleInput);
+                        resolve(value);
                     }
-                    alert("Invalid input! Enter 'V' for Vertical or 'H' for Horizontal.");
                 }
-                success = this.board.placeShip(coordinate, value, isVertical);
-                if (!success) alert ("Invalid placement. Try again!")
             }
+    
+            inputField.addEventListener("keydown", handleInput);
+        });
+    }
+    
 
-            
+    async getValidCoordinate(message) {
+        while (true) {
+            const coordinate = await this.getInput(message);
+
+            if (!/^[A-J](10|[1-9])$/.test(coordinate)) {
+                EventEmitter.emit('log', "Invalid coordinate! Must be a letter (A-J) and a number (1-10). Try again.");
+            } else if (this.attackedCoordinates.has(coordinate)) {
+                EventEmitter.emit('log', "You've already attacked that coordinate. Try a different one.");
+            } else {
+                return coordinate;
+            }
         }
     }
     
-    attack(opponentBoard) {
-        let coordinate = this.getValidCoordinate("Enter attack coordinate (e.g., 'D7'):");
-        opponentBoard.receiveAttack(coordinate);
-    }
-}
+    getOrientation() {
+        let button = document.getElementById("orientationButton");
+        let orientation = button.textContent === "Vertical" ? "Vertical" : "Horizontal";
+        return orientation === "Vertical";
+    };
 
-class Cpu extends Player {
-    constructor () {
-        super();
-        this. attackedCoordinates = new Set();
-    }
-
-    getRandomCoordinate () {
-        const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
-
-        const v = letters[Math.floor(Math.random() * 10)];
-        const h = Math.floor(Math.random() * 10) + 1;
-
-        return `${v}${h}`
-    }
-
-    randomlyPlaceShips () {
+        
+    async placeShipOnBoard() {
+        //console.log('placeShipOnBoard Started')
         for (const [key, value] of Object.entries(this.fleet)) {
-            
-            let success = false
-
+            let success = false;
+    
+            //console.log(`Placing ${key}...`);
+    
             while (!success) {
-                const coordinate = this.getRandomCoordinate();
-                const isVertical = Math.random() < 0.5;
-
+                let coordinate = await this.getValidCoordinate(`Enter coordinate for the ${key}`);
+                //console.log(`User entered coordinate: ${coordinate}`);
+    
+                let isVertical = this.getOrientation();
+                //console.log('Is vertical: ' + isVertical)
+    
                 success = this.board.placeShip(coordinate, value, isVertical);
+                if (!success) {
+                    //console.log("Invalid ship placement, retrying...");
+                    EventEmitter.emit('log', "Invalid placement. Try again!");
+                }
             }
+            EventEmitter.emit("render");
+            //console.log(`${key} placed successfully!`);
         }
     }
-
-    attack (opponentBoard) {
-        let coordinate;
     
-        // Keep generating random coordinates until a new one is found
+    async attack(opponentBoard) {
+        let coordinate;
         do {
-            coordinate = this.getRandomCoordinate();
-        } while (this.attackedCoordinates.has(coordinate)); 
-
-        this.attackedCoordinates.add(coordinate); // Store attack
+            coordinate = await this.getValidCoordinate("Enter attack coordinate (e.g., 'D7'):");
+        } while (this.attackedCoordinates.has(coordinate));
+    
+        this.attackedCoordinates.add(coordinate);
         opponentBoard.receiveAttack(coordinate);
     }
 }
 
-export { HumanPlayer, Cpu };
+export default HumanPlayer;
+
+
+

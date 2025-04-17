@@ -1,3 +1,5 @@
+import EventEmitter from "./eventEmitter.js";
+
 class Gameboard {
     constructor () {
         this.board = Array.from({ length: 10 }, () => Array(10).fill(null));
@@ -15,31 +17,39 @@ class Gameboard {
         return [letterToIndex[letter], number];
     }
 
-    receiveAttack (coordinate) {
-        const [row, col] = this.convertCoordinate(coordinate)
-
+    receiveAttack(coordinate) {
+        const [row, col] = this.convertCoordinate(coordinate);
         const miss = 'x';
+        const cell = this.board[row][col];
+    
+        if (cell && cell !== miss) {
+            cell.hit([row,col]); // Log hit position as string
+            EventEmitter.emit('log', `Attack landed on ${coordinate}.`);
+            
+            if (cell.isSunk()) {
+                EventEmitter.emit('log', `A ship has been sunk!`);
+            };
 
-        if (this.board[row][col] && this.board[row][col] != miss) {
-            this.board[row][col].hit();
-            console.log(`Attack landed on ${coordinate}.`)
-            this.board[row][col].isSunk();
+            return {hit: true, sunk: cell.isSunk()};
+
         } else {
             this.board[row][col] = miss;
-            console.log('Missed attack!')
+            EventEmitter.emit('log', `Missed attack at ${coordinate}.`);
+            return {hit: false};
         }
     }
+    
 
     placeShip (coordinate, ship, isVertical) {
         const [row, col] = this.convertCoordinate(coordinate);
 
         // Out-of-bounds check
         if (isVertical && row + ship.length > 10) {
-            console.log("Ship placement out of bounds!");
+            EventEmitter.emit('log',"Ship placement out of bounds!");
             return false;
         }
         if (!isVertical && col + ship.length > 10) {
-            console.log("Ship placement out of bounds!");
+            EventEmitter.emit('log',"Ship placement out of bounds!");
             return false;
         }
 
@@ -47,12 +57,12 @@ class Gameboard {
         for (let i = 0; i < ship.length; i++) {
             if (isVertical) {
                 if (this.board[row + i][col] !== null) {
-                    console.log("Ship placement overlaps another ship!");
+                    EventEmitter.emit('log',"Ship placement overlaps another ship!");
                     return false;
                 }
             } else {
                 if (this.board[row][col + i] !== null) {
-                    console.log("Ship placement overlaps another ship!");
+                    EventEmitter.emit('log',"Ship placement overlaps another ship!");
                     return false;
                 }
             }

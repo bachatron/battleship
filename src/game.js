@@ -1,4 +1,6 @@
-import { HumanPlayer, Cpu } from './player.js';
+import HumanPlayer from './player.js';
+import EventEmitter from './eventEmitter.js';
+import Cpu from './cpu.js';
 
 class Game {
     constructor () {
@@ -6,36 +8,54 @@ class Game {
         this.cpu = new Cpu();
     }
 
-    loadBoards () {
+    async loadBoards () { // Make it async
         this.cpu.randomlyPlaceShips();
-        console.log('Please choose where to place your fleet.');
-        this.player.placeShipOnBoard();
+        EventEmitter.emit('log', 'Please choose where to place your fleet.');
+        await this.player.placeShipOnBoard(); // Await user input
+        //console.log('All ships placed succesfully')
     }
 
-    playRound () {
-        console.log('Player’s turn! Select a coordinate for attack.')
-        this.player.attack(this.cpu.board);
-        console.log('Now it’s the CPU’s turn.');
-        this.cpu.attack(this.player.board);
-        this.showBoards();
+    async playRound() { 
+        //console.log("Player's turn started");
+        //EventEmitter.emit('log', "Player’s turn! Select a coordinate for attack.");
+        
+        await this.player.attack(this.cpu.board); // Wait for player input
+        //console.log("Player's attack completed");
+    
+        if (this.isGameOver()) {
+            //console.log("Game over after player's turn");
+            return;
+        }
+    
+        //console.log("CPU's turn started");
+        EventEmitter.emit('log', "Now it’s the CPU’s turn.");
+        
+        this.cpu.attack(this.player.board); // CPU moves
+        //console.log("CPU's attack completed");
+    
+        if (this.isGameOver()) {
+            //console.log("Game over after CPU's turn");
+            return;
+        }
+        //console.log("Round completed, next round starts");
     }
+    
 
     isGameOver () {
         return this.player.allShipsSunk() || this.cpu.allShipsSunk();
     }
 
-    start () {
-        this.loadBoards();
-        console.log("Starting next phase...");
-        while (!this.isGameOver()) {
-            this.playRound();
-        }
-        console.log('The game has ended!');
-    }
+    async start () { // Make it async
+        EventEmitter.emit("render");
+        await this.loadBoards(); // Ensure ships are placed before continuing
+        EventEmitter.emit('log', "Starting next phase...");
 
-    showBoards () {
-        console.log(this.player.board);
-        console.log(this.cpu.board);
+        while (!this.isGameOver()) {
+            await this.playRound(); // Wait for player input before continuing
+            EventEmitter.emit("render");
+        }
+
+        EventEmitter.emit('log', 'The game has ended!');
     }
 }
 

@@ -5,29 +5,66 @@ body {
     color: green;
     font-family: 'Press Start 2P', cursive;
     text-align: center;
-    }
+}
+
+h2 {
+    margin-left: 31px;
+}
 
 .grid-container {
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 20px;
     margin-top: 20px;
 }
 
+.parent {
+    display: grid;
+    grid-template-columns: repeat(11, 1fr);
+    grid-template-rows: repeat(11, 1fr);
+}
+
+.numbers-container {
+    grid-column: span 10 / span 10;
+    display: flex;
+}
+
+.num, .letter {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 30px;
+    height: 30px;
+}
+
+.letter-container {
+    grid-row: span 10 / span 10;
+    grid-row-start: 2;
+}
+
+.board-container {
+    grid-column: span 10 / span 10;
+    grid-row: span 10 / span 10;
+    grid-row-start: 2;
+}        
+        
 .grid {
     display: grid;
     grid-template-columns: repeat(10, 30px);
     grid-template-rows: repeat(10, 30px);
-    border: 2px solid green;
+    //border: 2px solid green;
 }
 
 .cell {
     width: 30px;
     height: 30px;
     border: 1px solid green;
+    box-sizing: border-box;
     text-align: center;
     line-height: 30px;
     font-size: 20px;
+    display: inline-block;
 }
 
 #log {
@@ -38,4 +75,36 @@ body {
     margin-left: auto;
     margin-right: auto;
     min-height: 50px;
+    text-align: start;
+}
+
+
+
+input, button {
+    margin-top: 20px;
+    background-color: black;
+    color: green;
+    border: 2px solid green;
+    font-size: 20px;
+    padding: 10px;
+}
+
+.empty {
+    background-color: black;
+}
+
+.miss {
+    background-color: blue;
+}
+
+.ship {
+    background-color: green;
+}
+
+.hide-ships .ship {
+    background-color: transparent;
+}
+
+.hit {
+    background-color: red !important;
 }

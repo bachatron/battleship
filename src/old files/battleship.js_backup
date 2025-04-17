@@ -1,10 +1,7 @@
 import Game from './game.js';
 import EventEmitter from "./eventEmitter.js";
 
-let devMode = false;
-
 window.toggleDevMode = function() {
-    devMode = !devMode;
     const grid = document.getElementById("cpu-grid");
     grid.classList.toggle("hide-ships");
 };
@@ -34,7 +31,9 @@ function createGrid(elementId, board, hideShips = false) {
                     addClass(cell,"miss");
                     break;
                 case typeof content === "object":
-                    addClass(cell,"ship");
+                    if (!hideShips) {
+                        addClass(cell,"ship");
+                    }
                     if (content.hitPositions.some(([r, c]) => r === row && c === col)) {
                         addClass(cell,"hit");
                     }
@@ -45,11 +44,6 @@ function createGrid(elementId, board, hideShips = false) {
 
             grid.appendChild(cell);
         }
-    }
-    if (hideShips && !devMode) {
-        grid.classList.add("hide-ships");
-    } else {
-        grid.classList.remove("hide-ships");
     }
 }
 

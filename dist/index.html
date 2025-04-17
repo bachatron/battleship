@@ -12,38 +12,77 @@
     <div class="grid-container">
         <div>
             <h2>Player Board</h2>
-            <div id="player-grid" class="grid"></div>
+            <div class="parent">
+                <div></div>
+                <div class="numbers-container">
+                    <div class="num">1</div>
+                    <div class="num">2</div>
+                    <div class="num">3</div>
+                    <div class="num">4</div>
+                    <div class="num">5</div>
+                    <div class="num">6</div>
+                    <div class="num">7</div>
+                    <div class="num">8</div>
+                    <div class="num">9</div>
+                    <div class="num">10</div>
+                </div>
+                <div class="letter-container">
+                    <div class="letter">A</div>
+                    <div class="letter">B</div>
+                    <div class="letter">C</div>
+                    <div class="letter">D</div>
+                    <div class="letter">E</div>
+                    <div class="letter">F</div>
+                    <div class="letter">G</div>
+                    <div class="letter">H</div>
+                    <div class="letter">I</div>
+                    <div class="letter">J</div>
+                </div>
+                <div class="board-container">
+                    <div id="player-grid" class="grid"></div>
+                </div>
+
+            </div>
         </div>
         <div>
             <h2>CPU Board</h2>
-            <div id="cpu-grid" class="grid"></div>
+            <div class="parent">
+                <div></div>
+                <div class="numbers-container">
+                    <div class="num">1</div>
+                    <div class="num">2</div>
+                    <div class="num">3</div>
+                    <div class="num">4</div>
+                    <div class="num">5</div>
+                    <div class="num">6</div>
+                    <div class="num">7</div>
+                    <div class="num">8</div>
+                    <div class="num">9</div>
+                    <div class="num">10</div>
+                </div>
+                <div class="letter-container">
+                    <div class="letter">A</div>
+                    <div class="letter">B</div>
+                    <div class="letter">C</div>
+                    <div class="letter">D</div>
+                    <div class="letter">E</div>
+                    <div class="letter">F</div>
+                    <div class="letter">G</div>
+                    <div class="letter">H</div>
+                    <div class="letter">I</div>
+                    <div class="letter">J</div>
+                </div>
+                <div class="board-container">
+                    <div id="cpu-grid" class="grid"></div>
+                </div>   
+            </div>
         </div>
     </div>
+    <div>
+        <input type="text" id="coordinateInput" placeholder="Enter coordinate (e.g., B4)" />
+        <button id="orientationButton">Vertical</button>
+    </div>
     <div id="log">Game Log</div>
-
-    <script>
-        function createGrid(elementId) {
-            const grid = document.getElementById(elementId);
-            for (let i = 0; i < 100; i++) {
-                const cell = document.createElement("div");
-                cell.classList.add("cell");
-                grid.appendChild(cell);
-            }
-        }
-
-        function logMessage(message) {
-            document.getElementById("log").innerText = message;
-        }
-
-        document.addEventListener("keydown", (event) => {
-            if (event.key === "Enter") {
-                logMessage("Processing move...");
-                setTimeout(() => logMessage("Attack registered!"), 1000);
-            }
-        });
-
-        createGrid("player-grid");
-        createGrid("cpu-grid");
     <script src="bundle.js"></script>
 </body>
 </html>

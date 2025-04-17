@@ -1,0 +1,169 @@
+import Gameboard from "./gameboard.js";
+import Ship from "./ship.js";
+import EventEmitter from "./eventEmitter.js";
+
+class Player {
+    constructor () {
+        this.fleet = {
+            carrier: new Ship(5),
+            battleship: new Ship(4),
+            destroyer: new Ship(3),
+            submarine: new Ship(3),
+            patrol: new Ship(2),
+        }
+        this.board = new Gameboard()
+    }
+
+    allShipsSunk () {
+        return Object.values(this.fleet).every(ship => ship.isSunk());
+    }
+}
+
+class HumanPlayer extends Player {
+    constructor () {
+        super();
+    }
+
+    getInput(message) {
+        EventEmitter.emit('log', message); // Show message in UI
+    
+        return new Promise((resolve) => {
+            const inputField = document.getElementById("coordinateInput");
+    
+            function handleInput(event) {
+                if (event.key === "Enter") {
+                    const value = inputField.value.trim().toUpperCase();
+                    inputField.value = ""; // Clear input field
+                    inputField.removeEventListener("keypress", handleInput); // Remove event listener after input
+                    resolve(value); // Resolve the Promise with input
+                }
+            }
+    
+            inputField.addEventListener("keypress", handleInput);
+        });
+    }
+    
+
+    async getValidCoordinate(message) {
+        let coordinate = await this.getInput(message);
+    
+        if (/^[A-J](10|[1-9])$/.test(coordinate)) {
+            return coordinate; // Valid input, return it
+        }
+    
+        EventEmitter.emit('log', "Invalid coordinate! Must be a letter (A-J) and a number (1-10). Try again.");
+        
+        return await this.getValidCoordinate(message); // Call itself again until valid input is received
+    }
+    
+
+    /*async placeShipOnBoard () {
+
+        for (const [key, value] of Object.entries(this.fleet)) {
+
+            let success = false
+
+            while (!success) {
+
+                let coordinate = await this.getValidCoordinate(`Enter coordinate for the ${key} (e.g., "B4"):`);
+                let isVertical;
+
+                // Validate orientation input ("V" or "H")
+                while (true) {
+                    let input = await this.getInput('Vertical (V) or Horizontal (H)?');
+                    if (input === "V" || input === "H") {
+                        isVertical = input === "V";
+                        break;
+                    }
+                    EventEmitter.emit('log',"Invalid input! Enter 'V' for Vertical or 'H' for Horizontal.");
+                }
+                success = this.board.placeShip(coordinate, value, isVertical);
+                if (!success) EventEmitter.emit('log',"Invalid placement. Try again!")
+            }
+
+            
+        }
+    }*/
+
+    async getOrientation() {
+        return new Promise((resolve) => {
+            let button = document.getElementById("orientationButton");
+        
+            button.addEventListener("click", function handler() {
+                let orientation = button.textContent === "Vertical" ? "Horizontal" : "Vertical";
+                button.textContent = orientation;
+                button.removeEventListener("click", handler); // Prevent multiple triggers
+                resolve(orientation === "Vertical");
+            });
+        });
+    }
+        
+
+    async placeSingleShip(shipName, ship) {
+        let coordinate = await this.getValidCoordinate(`Enter coordinate for the ${shipName} (e.g., "B4"):`);
+        let isVertical = await this.getOrientation();
+        
+        let success = this.board.placeShip(coordinate, ship, isVertical);
+        
+        if (!success) {
+            EventEmitter.emit('log', "Invalid placement. Try again!");
+            return await this.placeSingleShip(shipName, ship); // Recursively call itself if placement fails
+        }
+    }
+        
+    async placeShipOnBoard() {
+        for (const [key, value] of Object.entries(this.fleet)) {
+            await this.placeSingleShip(key, value); // Ensure each ship is placed one by one
+        }
+    }
+        
+    
+    async attack(opponentBoard) {
+        let coordinate = await this.getValidCoordinate("Enter attack coordinate (e.g., 'D7'):");
+        opponentBoard.receiveAttack(coordinate);
+    }
+}
+
+class Cpu extends Player {
+    constructor () {
+        super();
+        this. attackedCoordinates = new Set();
+    }
+
+    getRandomCoordinate () {
+        const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+
+        const v = letters[Math.floor(Math.random() * 10)];
+        const h = Math.floor(Math.random() * 10) + 1;
+
+        return `${v}${h}`
+    }
+
+    randomlyPlaceShips () {
+        for (const [key, value] of Object.entries(this.fleet)) {
+            
+            let success = false
+
+            while (!success) {
+                const coordinate = this.getRandomCoordinate();
+                const isVertical = Math.random() < 0.5;
+
+                success = this.board.placeShip(coordinate, value, isVertical);
+            }
+        }
+    }
+
+    attack (opponentBoard) {
+        let coordinate;
+    
+        // Keep generating random coordinates until a new one is found
+        do {
+            coordinate = this.getRandomCoordinate();
+        } while (this.attackedCoordinates.has(coordinate)); 
+
+        this.attackedCoordinates.add(coordinate); // Store attack
+        opponentBoard.receiveAttack(coordinate);
+    }
+}
+
+export { HumanPlayer, Cpu };

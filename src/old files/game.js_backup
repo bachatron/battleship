@@ -1,0 +1,37 @@
+import { HumanPlayer, Cpu } from './player.js';
+import EventEmitter from "./eventEmitter.js";
+
+class Game {
+    constructor () {
+        this.player = new HumanPlayer();
+        this.cpu = new Cpu();
+    }
+
+    loadBoards () {
+        this.cpu.randomlyPlaceShips();
+        EventEmitter.emit('log','Please choose where to place your fleet.');
+        this.player.placeShipOnBoard();
+    }
+
+    playRound () {
+        EventEmitter.emit('log','Player’s turn! Select a coordinate for attack.');
+        this.player.attack(this.cpu.board);
+        EventEmitter.emit('log','Now it’s the CPU’s turn.');
+        this.cpu.attack(this.player.board);
+    }
+
+    isGameOver () {
+        return this.player.allShipsSunk() || this.cpu.allShipsSunk();
+    }
+
+    start () {
+        this.loadBoards();
+        EventEmitter.emit('log',"Starting next phase...");
+        while (!this.isGameOver()) {
+            this.playRound();
+        }
+        EventEmitter.emit('log','The game has ended!');
+    }
+}
+
+export default Game;
