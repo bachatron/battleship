@@ -39,9 +39,6 @@ The CPU:
 
 🚀 Getting Started
 
-    Try it using github live repo
-
-    https://bachatron.github.io/battleship/
 
 ✍️ Author
 
