@@ -21,7 +21,7 @@
   "bugs": {
     "url": "https://github.com/bachatron/battleship/issues"
   },
-  "homepage": "https://bachatron.github.com/battleship/",
+  "homepage": "https://bachatron.github.io/battleship",
   "devDependencies": {
     "@babel/core": "^7.26.10",
     "@babel/preset-env": "^7.26.9",
